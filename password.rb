@@ -30,7 +30,7 @@ end
 
 def get
   # gets the credentials of a service
-  client()
+  client
   sql = " SELECT * FROM passwords "
   res = client.query(sql, :as => :hash)
   res.each do |row|
@@ -54,9 +54,9 @@ def to_do
   puts "What do you want to do?", c, g, "Please select one of the above"
   input = gets.chomp
   if input == "create"
-    create()
+    create
   elsif input == "get"
-    get()
+    get
   end
 end
 
@@ -66,7 +66,7 @@ def ask_password
   pass = gets.chomp
 
   if pass == "s"
-   to_do()
+    to_do
   else
     puts "Sorry mate, get out of here!"
   end
