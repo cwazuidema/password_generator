@@ -2,4 +2,5 @@ source "https://rubygems.org"
 
 ruby "2.3.0"
 
-gem 'mysql'
+gem 'mysql2'
+gem 'highline'
