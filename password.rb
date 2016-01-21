@@ -13,17 +13,17 @@ end
 def save_credentials(service, username, password)
   # save the credentials for the given service, username and password in the database
   client()
-  sql = "INSERT INTO `password`.`passwords` (`Service`, `Username`, `Password`) VALUES ('" + service + "', '" + username + "', '" + password + "');"
+  sql = "INSERT INTO `password`.`passwords` (`Service`, `Username`, `Password`) VALUES ('#{ service }', '#{ username }', '#{ password }');"
   client.query(sql)
 end
 
 def create
   # create credentials for a new service
-  cli =  HighLine.new  
-  service = cli.ask "We start creating new credentials.", "What is the name of the service?"
+  cli = HighLine.new
+  service = cli.ask "We start creating new credentials.\nWhat is the name of the service?"
   username = cli.ask "What is your username?"
   password = random_password()
-  puts "Use this password for your service".red, "Password: " + password.blue
+  puts "Use this password for your service".red, "Password: #{ password.blue }"
   save_credentials(service, username, password)
 end
 
@@ -37,10 +37,11 @@ def get
   end
   puts "Please type the service you want"
   service = gets.chomp
-  sql = " SELECT * FROM passwords where service = '" + service + "';"
+  sql = " SELECT * FROM passwords where service = '#{service}';"
   res = client.query(sql, :as => :hash)
   res.each do |row|
-    puts "Username: ".green + row['Username'].blue, "Password: ".green + row['Password'].blue
+    puts "#{ "Username: ".green } #{ row['Username'].blue } \n #{ "Password: ".green } #{ row['Password'].blue }"
+
   end
 end
 
@@ -58,8 +59,8 @@ def to_do
 end
 
 def ask_password
-  cli = HighLine.new  
   # ask for the supersecret password
+  cli = HighLine.new
   pass = cli.ask "What is your supersecret password?"
   if pass == "s"
     to_do
