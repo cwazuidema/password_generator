@@ -1,5 +1,6 @@
 require "mysql2"
 require "colorize"
+require 'highline'
 
 CHARS = ('0'..'9').to_a + ('A'..'Z').to_a + ('a'..'z').to_a
 
@@ -18,13 +19,11 @@ end
 
 def create
   # create credentials for a new service
-  puts "We start creating new credentials.", "What is the name of the service?"
-  service = gets.chomp
-  puts "What is your username?"
-  username = gets.chomp
+  cli =  HighLine.new  
+  service = cli.ask "We start creating new credentials.", "What is the name of the service?"
+  username = cli.ask "What is your username?"
   password = random_password()
   puts "Use this password for your service".red, "Password: " + password.blue
-
   save_credentials(service, username, password)
 end
 
@@ -47,12 +46,10 @@ end
 
 def to_do
   # choose if you want to get or create credentials
-
+  cli = HighLine.new
   c = "create".red
   g = "get".red
-
-  puts "What do you want to do?", c, g, "Please select one of the above"
-  input = gets.chomp
+  input = cli.ask "What do you want to do?\n#{ c }\n#{ g }\nPlease select one of the above"
   if input == "create"
     create
   elsif input == "get"
@@ -61,10 +58,9 @@ def to_do
 end
 
 def ask_password
+  cli = HighLine.new  
   # ask for the supersecret password
-  puts "What is your supersecret password?"
-  pass = gets.chomp
-
+  pass = cli.ask "What is your supersecret password?"
   if pass == "s"
     to_do
   else
