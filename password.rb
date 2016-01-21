@@ -1,6 +1,13 @@
 require "mysql2"
 require "colorize"
 require 'highline'
+require 'active_record'
+
+class Credential < ActiveRecord::Base
+  establish_connection adapter: 'mysql2', database: 'password', username: 'root', password: 'root'
+  self.table_name = "passwords"
+end
+
 
 CHARS = ('0'..'9').to_a + ('A'..'Z').to_a + ('a'..'z').to_a
 
@@ -12,9 +19,7 @@ end
 
 def save_credentials(service, username, password)
   # save the credentials for the given service, username and password in the database
-  client()
-  sql = "INSERT INTO `password`.`passwords` (`Service`, `Username`, `Password`) VALUES ('#{ service }', '#{ username }', '#{ password }');"
-  client.query(sql)
+  Credential.create!(service: service, username: username, password: password)
 end
 
 def create
@@ -29,19 +34,15 @@ end
 
 def get
   # gets the credentials of a service
-  client
-  sql = " SELECT * FROM passwords "
-  res = client.query(sql, :as => :hash)
-  res.each do |row|
-    puts row['Service'].red
+  cli = HighLine.new
+  credentials = Credential.all
+  credentials.each do |credential|
+    puts credential.service.red
   end
-  puts "Please type the service you want"
-  service = gets.chomp
-  sql = " SELECT * FROM passwords where service = '#{service}';"
-  res = client.query(sql, :as => :hash)
-  res.each do |row|
-    puts "#{ "Username: ".green } #{ row['Username'].blue } \n #{ "Password: ".green } #{ row['Password'].blue }"
-
+  service = cli.ask "Please type the service you want"
+  credentials = Credential.where(service: service)
+  credentials.each do |credential|
+    puts "#{ "Username: ".green } #{ credential.username.blue } \n#{ "Password: ".green } #{ credential.password.blue }"
   end
 end
 
