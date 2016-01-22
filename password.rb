@@ -8,13 +8,13 @@ class Credential < ActiveRecord::Base
   self.table_name = "passwords"
 end
 
-
 CHARS = ('0'..'9').to_a + ('A'..'Z').to_a + ('a'..'z').to_a
+
+@cli = HighLine.new
 
 def random_password(length=10)
   # creates a random 10 digit password
-  password = CHARS.sort_by { rand }.join[0...length]
-  return password
+  CHARS.sort_by { rand }.join[0...length]
 end
 
 def save_credentials(service, username, password)
@@ -24,9 +24,8 @@ end
 
 def create
   # create credentials for a new service
-  cli = HighLine.new
-  service = cli.ask "We start creating new credentials.\nWhat is the name of the service?"
-  username = cli.ask "What is your username?"
+  service = @cli.ask "We start creating new credentials.\nWhat is the name of the service?"
+  username = @cli.ask "What is your username?"
   password = random_password()
   puts "Use this password for your service".red, "Password: #{ password.blue }"
   save_credentials(service, username, password)
@@ -34,46 +33,29 @@ end
 
 def get
   # gets the credentials of a service
-  cli = HighLine.new
   credentials = Credential.all
   credentials.each do |credential|
     puts credential.service.red
   end
-  service = cli.ask "Please type the service you want"
+  service = @cli.ask "Please type the service you want"
   credentials = Credential.where(service: service)
   credentials.each do |credential|
     puts "#{ "Username: ".green } #{ credential.username.blue } \n#{ "Password: ".green } #{ credential.password.blue }"
   end
 end
 
-def to_do
+def ask_user_if_get_or_create
   # choose if you want to get or create credentials
-  cli = HighLine.new
-  c = "create".red
-  g = "get".red
-  input = cli.ask "What do you want to do?\n#{ c }\n#{ g }\nPlease select one of the above"
-  if input == "create"
-    create
-  elsif input == "get"
-    get
-  end
+  input = @cli.ask "What do you want to do?\n#{ "create".red }\n#{ "get".red }\nPlease select one of the above"
+  create if input == 'create'
+  get if input == 'get'
 end
 
 def ask_password
   # ask for the supersecret password
-  cli = HighLine.new
-  pass = cli.ask "What is your supersecret password?"
-  if pass == "s"
-    to_do
-  else
-    puts "Sorry mate, get out of here!"
-  end
-end
-
-def client
-  # returns a mysql connection to the database
-  client = Mysql2::Client.new(:host => "localhost", :username => "root", :password => "root", :database => "password")
-  return client
+  pass = @cli.ask "What is your supersecret password?"
+  ask_user_if_get_or_create if pass == 's'
+  puts "Sorry mate, get out of here!" unless pass == 's'
 end
 
 ask_password
